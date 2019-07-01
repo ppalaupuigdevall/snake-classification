@@ -1,0 +1,80 @@
+Epoch 0/29
+----------
+train Loss: 2.8993 Acc: 0.2709 F: 0.197
+val Loss: 2.4926 Acc: 0.3302 F: 0.253
+
+Epoch 1/29
+----------
+train Loss: 2.3799 Acc: 0.3374 F: 0.267
+val Loss: 2.3025 Acc: 0.3240 F: 0.264
+
+Epoch 2/29
+----------
+train Loss: 2.2379 Acc: 0.3499 F: 0.282
+val Loss: 2.2238 Acc: 0.3666 F: 0.294
+
+Epoch 3/29
+----------
+train Loss: 2.1683 Acc: 0.3605 F: 0.296
+val Loss: 2.1803 Acc: 0.3654 F: 0.293
+
+Epoch 4/29
+----------
+train Loss: 2.1345 Acc: 0.3652 F: 0.299
+val Loss: 2.1445 Acc: 0.3594 F: 0.298
+
+Epoch 5/29
+----------
+train Loss: 2.1013 Acc: 0.3676 F: 0.302
+val Loss: 2.1591 Acc: 0.3624 F: 0.294
+
+Epoch 6/29
+----------
+train Loss: 2.0831 Acc: 0.3723 F: 0.308
+val Loss: 2.1402 Acc: 0.3816 F: 0.302
+
+Epoch 7/29
+----------
+train Loss: 2.0605 Acc: 0.3745 F: 0.310
+val Loss: 2.1139 Acc: 0.3568 F: 0.292
+
+Epoch 8/29
+----------
+train Loss: 2.0448 Acc: 0.3759 F: 0.312
+val Loss: 2.1146 Acc: 0.3808 F: 0.311
+
+Epoch 9/29
+----------
+train Loss: 2.0263 Acc: 0.3839 F: 0.319
+val Loss: 2.1149 Acc: 0.3483 F: 0.294
+
+Epoch 10/29
+----------
+train Loss: 2.0089 Acc: 0.3852 F: 0.320
+val Loss: 2.0893 Acc: 0.3890 F: 0.313
+
+Epoch 11/29
+----------
+train Loss: 2.0028 Acc: 0.3853 F: 0.320
+val Loss: 2.0894 Acc: 0.3690 F: 0.308
+
+Epoch 12/29
+----------
+train Loss: 1.9981 Acc: 0.3860 F: 0.322
+val Loss: 2.0776 Acc: 0.3730 F: 0.306
+
+Epoch 13/29
+----------
+train Loss: 1.9788 Acc: 0.3908 F: 0.326
+val Loss: 2.0738 Acc: 0.3900 F: 0.315
+
+Epoch 14/29
+----------
+train Loss: 1.9867 Acc: 0.3900 F: 0.325
+val Loss: 2.0616 Acc: 0.3701 F: 0.307
+
+Epoch 15/29
+----------
+
+train Loss: 1.9689 Acc: 0.3906 F: 0.324
+val Loss: 2.0711 Acc: 0.3780 F: 0.311
