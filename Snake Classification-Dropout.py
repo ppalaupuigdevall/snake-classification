@@ -336,7 +336,7 @@ model.eval()
 model = model.to(device)
 
 cm = np.zeros((C,C))
-for inputs, labels in train_loader:
+for inputs, labels in val_loader:
     inputs = inputs.to(device)
     outputs = model(inputs)
     _, preds = torch.max(outputs, 1)

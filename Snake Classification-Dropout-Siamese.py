@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Siamese network
-# 
-# This notebook explains a possible improvement for the provious model, a resnet50 with dropout. Now we will use a siamese network but initialized of course with the network pretrained in the previous notebook. First, we will construct a confusion matrix from which we will extract hard examples that our network struggles to classify. Second, we will construct the siamese network and train it. Moreover, quite a lot of tools (Datasets, Loss Functions) will need to be created from scratch.
-
 # In[1]:
 
 
@@ -34,11 +30,6 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 print(device)
 print("Device: " + str(torch.cuda.get_device_name(0)))
 
-
-# ## 1. Building a confusion matrix
-# 
-# The idea behind siamese networks is that we want to increase the F score by increasing the distance of the feature vectors of samples belonging to different classses and reducing the distance of the feature vectors belonging to the same class. 
-# In order to have these pairs, we must save a confusion matrix with the names of the samples and where they were classified. To do this we create a new ImageFolderId dataset.
 
 # In[3]:
 
@@ -90,8 +81,6 @@ print(class_balance)
 criterion = nn.CrossEntropyLoss(weight=class_balance)
 
 
-# We load the best model with dropout to construct the confusion matrix.
-
 # In[5]:
 
 
@@ -121,9 +110,7 @@ model.load_state_dict(model_weights)
 model.eval()
 
 
-# Basically we make a forward pass to all the samples in the training set and build the confusion matrix.
-
-# In[ ]:
+# In[6]:
 
 
 # Now make a forward pass through all the training set and build a confusion matrix saving each sample-id
@@ -154,28 +141,18 @@ for inputs, labels in train_loader:
     for i in correct_classification[0]:
         confusion_matrix[labels[i]][preds[i].item()].append(idxs[i])
     break
-# RUN BELOW LINES TO SAVE THE CONFUSION MATRIX WITH IDs
 # with open('/home/user/confusion_matrix', 'wb') as f:
 #     pickle.dump(confusion_matrix, f)
 
 
-# ## 2. Creating the Siamese
-# 
-# ### 2.1 Dataset
-# 
-# Here is where things get more interesting. To train a siamese network, we need image pairs, so we need to create a PairsDataset class that picks pairs __taking into account the proportion of missclassified samples. Thanks to this, we choose image pairs that our network is likely to confuse__.
-
-# In[6]:
+# In[7]:
 
 
 # Once the confusion matrix is created, a new dataset to sample pairs has to be created
 class PairsDataset(torch.utils.data.Dataset):
     
     def __init__(self, confusion_mat_paths, confusion_mat_counter, transform):
-        # List of lists (matrix like) containing the ids in the training set
         self.confusion_matrix_paths = confusion_mat_paths
-        # Matrix (C x C) containing the number of classified samples: The rows are the actual class and the columns the 
-        # predicted class. A typical confusion matrix.
         self.confusion_matrix_counter = confusion_mat_counter
         self.C = 45 # number of classes
         self.transform = transform
@@ -266,7 +243,7 @@ class PairsDataset(torch.utils.data.Dataset):
         return int(number_of_pairs)
 
 
-# In[17]:
+# In[8]:
 
 
 # Now load the confusion matrix
@@ -276,16 +253,14 @@ cm = np.zeros((45,45))
 for i in range(45):
         for j in range(45):
                 cm[i,j] = len(confusion_matrix[i][j])
-# Dataset and dataloader
+
 training_set_pairs = PairsDataset(confusion_matrix, cm,transforms.Compose([transforms.RandomSizedCrop(224),transforms.RandomHorizontalFlip(),transforms.ToTensor(),normalize]))
 dataloader_pairs = torch.utils.data.DataLoader(training_set_pairs, batch_size=4, shuffle=False, num_workers=2, pin_memory=True)
+print("Length of the dataset")
+print(len(dataloader_pairs))
 
 
-# ### 2.2 Network
-# 
-# The important thing to notice is that we are passing as argument a pretrained model.
-
-# In[8]:
+# In[9]:
 
 
 class SiameseNetwork(nn.Module):
@@ -305,17 +280,13 @@ class SiameseNetwork(nn.Module):
         torch.save(self.cnn_no_fc.state_dict(), '/home/user/siamese/resnet50_snakes_siamese_{}.pth'.format(i))
 
 
-# In[9]:
+# In[10]:
 
 
 siamese_net = SiameseNetwork(model)
 
 
-# ### 2.3 Loss Function
-# 
-# I used the contrastive loss function proposed by Hadsell, Chopra and LeCun in http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
-
-# In[10]:
+# In[11]:
 
 
 class ContrastiveLoss(torch.nn.Module):
@@ -336,16 +307,14 @@ class ContrastiveLoss(torch.nn.Module):
         return loss_contrastive
 
 
-# In[11]:
+# In[12]:
 
 
 criterion_siamese = ContrastiveLoss()
 optimizer = torch.optim.Adam(siamese_net.parameters(),lr = 0.0005 )
 
 
-# ### 2.4 Training
-
-# In[ ]:
+# In[13]:
 
 
 num_epochs = 10
@@ -365,16 +334,13 @@ for epoch in range(0,num_epochs):
             print("Epoch number {}\n Current loss {}\n".format(epoch,loss_contrastive.item()))
         if i%30 == 0:
             siamese_net.save_model_weights(i)
-        # REMOVE THIS BREAK TO TRAIN
         break
 
 
-# ### 2.5 INFERENCE ON VALIDATION SET
-
-# In[15]:
+# In[ ]:
 
 
-siamese_weights_path = '/home/user/siamese/resnet50_snakes_siamese_0.pth'
+siamese_weights_path = '/home/user/siamese/resnet50_snakes_siamese_3000.pth'
 dropout_weights_path = '/home/user/finetuning/resnet50_snakes_drop_Ep_28_Acc_0.626_F_0.509.pth'
 
 model_dropout = torchvision.models.resnet50(pretrained=True, progress=True)
@@ -411,7 +377,6 @@ model_dropout.load_state_dict(dropout_dict)
 
 model_dropout = model_dropout.to(device)
 f_score_list = []
-print(len(val_loader.dataset))
 running_corrects = 0
 for inputs, labels in val_loader:
     inputs = inputs.to(device)
@@ -434,7 +399,7 @@ for inputs, labels in val_loader:
     f_score_list.append(F_score)
     running_corrects += torch.sum(preds == labels.data)
 
-epoch_acc = running_corrects.double() / len(val_loader.dataset)
+epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
 epoch_f_score = np.average(np.array(f_score_list))
 print('Siamese --> Acc: {:.4f} F: {:.3f}'.format(epoch_acc, epoch_f_score))
 
@@ -442,7 +407,8 @@ print('Siamese --> Acc: {:.4f} F: {:.3f}'.format(epoch_acc, epoch_f_score))
 # In[28]:
 
 
-
+loss = [28.4, 1.05,1.44,0.80,0.94,0.81,1.47,1.46,1.33,1.26,1.09,1.49,1.41,1.09,1.64,1.23,0.84,1.10,1.10,0.19,1.06,1.06,2.28,1.04,0.81,1.47,1.51,0.63,0.61,1.35,1.35,0.79,2.49,1.04,1.12,0.96,1.31,1.09,1.18,1.07,1.11,1.03,1.09,1.12,0.77,0.84,0.77,0.75,1.20,1.00,1.10]
+pylab.plot(range(len(loss)), loss)
 
 
 # In[ ]:
